@@ -15,6 +15,7 @@ Trabalho prático da disciplina de Paradigmas de Linguagens de Programação do 
 - Harmonização com bebidas
 - Comparação entre pizzas
 - Estatísticas do cardápio
+- Consultas avançadas demonstrando recursos do Prolog (corte, recursão, listas e negação)
 
 ## Como Executar
 

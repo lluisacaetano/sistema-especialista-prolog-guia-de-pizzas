@@ -375,20 +375,12 @@ preco(vegetariana, media).
 pizza_existe(Nome) :-
     pizza(Nome, _, _, _), !.
 
-% Pega a categoria da pizza
-categoria(Pizza, Cat) :-
-    pizza(Pizza, Cat, _, _).
-
 % Retorna lista com todas as pizzas de uma categoria
 pizzas_categoria(Cat, Lista) :-
     findall(Nome, pizza(Nome, Cat, _, _), Lista).
 
 
 % --- BUSCAS ---
-
-% Acha pizzas vegetarianas
-pizza_vegetariana(Nome) :-
-    caracteristica(Nome, vegetariana).
 
 % Acha pizza picante (com corte)
 pizza_picante(Nome) :-
@@ -400,25 +392,12 @@ pizza_popular(Nome) :-
 pizza_popular(Nome) :-
     pizza(Nome, _, _, media).
 
-% Acha pizzas doces
-pizza_doce(Nome) :-
-    pizza(Nome, doce, _, _).
-
-% Acha pizzas saudaveis
-pizza_saudavel(Nome) :-
-    caracteristica(Nome, saudavel).
-
-
 % --- INGREDIENTES ---
 
 % Lista os ingredientes de uma pizza
 ingredientes_pizza(Pizza, Lista) :-
     pizza_existe(Pizza),
     findall(Ing, ingrediente(Pizza, Ing), Lista).
-
-% Acha pizza que tem um ingrediente
-pizza_com_ingrediente(Ingrediente, Pizza) :-
-    ingrediente(Pizza, Ingrediente).
 
 % Lista todas as pizzas com determinado ingrediente
 pizzas_com_ingrediente(Ingrediente, Lista) :-
@@ -448,11 +427,6 @@ concatenar([], L, L).
 concatenar([H|T], L2, [H|L3]) :-
     concatenar(T, L2, L3).
 
-% Conta quantos ingredientes tem na pizza
-contar_ingredientes(Pizza, N) :-
-    ingredientes_pizza(Pizza, Lista),
-    tamanho(Lista, N).
-
 % Filtra pizzas por categoria (recursivo com corte)
 filtrar_por_categoria([], _, []).
 filtrar_por_categoria([Pizza|Resto], Cat, [Pizza|Filtrada]) :-
@@ -475,14 +449,6 @@ exibir_lista([H|T]) :-
     format('  - ~w~n', [H]),
     exibir_lista(T).
 
-% Exibe lista numerada (recursivo)
-exibir_numerada([], _).
-exibir_numerada([H|T], N) :-
-    format('  ~w. ~w~n', [N, H]),
-    N1 is N + 1,
-    exibir_numerada(T, N1).
-
-
 % --- RECOMENDACOES ---
 
 % Recomenda pra vegetariano
@@ -490,14 +456,14 @@ recomendar_para_vegetariano(Pizza, Motivo) :-
     caracteristica(Pizza, vegetariana),
     pizza(Pizza, Cat, _, _),
     Cat \= doce,
-    Motivo = 'Opcao vegetariana saborosa', !.
+    Motivo = 'Opcao vegetariana saborosa'.
 
 % Recomenda pra crianca
 recomendar_para_crianca(Pizza, Motivo) :-
     (pizza(Pizza, doce, _, alta) ;
      Pizza = frango_catupiry ;
      Pizza = mussarela),
-    Motivo = 'Sabor suave, ideal para criancas', !.
+    Motivo = 'Sabor suave, ideal para criancas'.
 
 % Recomenda pra festa
 recomendar_para_festa(Pizza, Motivo) :-
@@ -508,10 +474,6 @@ recomendar_para_festa(Pizza, Motivo) :-
 recomendar_para_dieta(Pizza, Motivo) :-
     caracteristica(Pizza, saudavel),
     Motivo = 'Opcao mais leve e saudavel'.
-
-% Sugere bebida
-recomendar_bebida(Pizza, Bebida) :-
-    harmoniza_bebida(Pizza, Bebida).
 
 % Lista bebidas que combinam
 recomendar_bebidas(Pizza, Lista) :-
@@ -553,7 +515,7 @@ comparar_pizzas(P1, P2) :-
     tamanho(I2, N2),
     format('~n=== COMPARACAO ===~n'),
     format('~20w | ~20w~n', [P1, P2]),
-    format('~42`-t~n'),
+    format('~`-t~42|~n'),
     format('Categoria:   ~8w | ~8w~n', [C1, C2]),
     format('Molho:       ~8w | ~8w~n', [M1, M2]),
     format('Popularidade:~8w | ~8w~n', [Pop1, Pop2]),
@@ -615,6 +577,7 @@ menu_principal :-
     write('*  5. Harmonizacao com bebidas                     *'), nl,
     write('*  6. Comparar pizzas                              *'), nl,
     write('*  7. Estatisticas                                 *'), nl,
+    write('*  8. Consultas avancadas (Prolog)                 *'), nl,
     write('*  0. Sair                                         *'), nl,
     write('****************************************************'), nl,
     write('Escolha: '),
@@ -630,6 +593,7 @@ processar(4) :- !, menu_recomendacoes, menu_principal.
 processar(5) :- !, menu_harmonizacao, menu_principal.
 processar(6) :- !, comparar_menu, menu_principal.
 processar(7) :- !, estatisticas, menu_principal.
+processar(8) :- !, menu_avancado, menu_principal.
 processar(_) :- nl, write('Opcao invalida!'), nl, nl, menu_principal.
 
 % Busca pizza pelo nome
@@ -719,6 +683,82 @@ comparar_menu :-
     write('Segunda pizza: '),
     read(P2),
     comparar_pizzas(P1, P2).
+
+
+% Menu de consultas avancadas (demonstra corte, recursao, listas e negacao)
+menu_avancado :-
+    nl,
+    write('=== CONSULTAS AVANCADAS ==='), nl,
+    write('  1. Sugerir uma pizza picante      [corte]'), nl,
+    write('  2. Sugerir uma pizza popular      [corte]'), nl,
+    write('  3. Verificar ingrediente na pizza [recursao: membro]'), nl,
+    write('  4. Verificar restricao alimentar  [negacao]'), nl,
+    write('  5. Filtrar vegetarianas           [recursao + lista]'), nl,
+    write('  6. Filtrar por categoria          [recursao + lista]'), nl,
+    write('  7. Combinar 2 pizzas (combo)      [recursao: concatenar]'), nl,
+    write('Escolha: '),
+    read(Op),
+    processar_avancado(Op).
+
+% Sugere uma pizza picante (o corte para na primeira encontrada)
+processar_avancado(1) :- !,
+    (pizza_picante(P) ->
+        nl, format('Sugestao picante: ~w~n', [P])
+    ;
+        nl, write('Nenhuma pizza picante encontrada.'), nl).
+
+% Sugere uma pizza popular (tenta alta, senao media - usa corte)
+processar_avancado(2) :- !,
+    (pizza_popular(P) ->
+        nl, format('Sugestao popular: ~w~n', [P])
+    ;
+        nl, write('Nenhuma pizza popular encontrada.'), nl).
+
+% Verifica se um ingrediente esta na pizza (usa membro - recursao)
+processar_avancado(3) :- !,
+    nl, write('Nome da pizza: '), read(Pizza),
+    write('Ingrediente: '), read(Ing),
+    (ingredientes_pizza(Pizza, Lista), membro(Ing, Lista) ->
+        nl, format('Sim! ~w leva ~w.~n', [Pizza, Ing])
+    ;
+        nl, format('Nao. ~w nao leva ~w (ou nao existe).~n', [Pizza, Ing])).
+
+% Verifica restricao: a pizza NAO tem o ingrediente? (negacao por falha \+)
+processar_avancado(4) :- !,
+    nl, write('Nome da pizza: '), read(Pizza),
+    write('Ingrediente a evitar: '), read(Ing),
+    (pizza_sem_ingrediente(Pizza, Ing) ->
+        nl, format('Pode comer! ~w nao leva ~w.~n', [Pizza, Ing])
+    ;
+        nl, format('Cuidado: ~w leva ~w (ou nao existe).~n', [Pizza, Ing])).
+
+% Filtra so as vegetarianas de todas as pizzas (recursao sobre lista)
+processar_avancado(5) :- !,
+    findall(P, pizza(P, _, _, _), Todas),
+    filtrar_vegetarianas(Todas, Veg),
+    nl, write('Pizzas vegetarianas (filtro recursivo):'), nl,
+    exibir_lista(Veg).
+
+% Filtra todas as pizzas de uma categoria (recursao sobre lista)
+processar_avancado(6) :- !,
+    nl, write('Categoria (tradicional/especial/vegana/doce/fitness): '), read(Cat),
+    findall(P, pizza(P, _, _, _), Todas),
+    filtrar_por_categoria(Todas, Cat, Filtradas),
+    nl, format('Pizzas da categoria ~w (filtro recursivo):~n', [Cat]),
+    exibir_lista(Filtradas).
+
+% Combina os ingredientes de duas pizzas numa lista so (concatenar - recursao)
+processar_avancado(7) :- !,
+    nl, write('Primeira pizza: '), read(P1),
+    write('Segunda pizza: '), read(P2),
+    (ingredientes_pizza(P1, I1), ingredientes_pizza(P2, I2) ->
+        concatenar(I1, I2, Combo),
+        nl, format('Ingredientes combinados de ~w + ~w:~n', [P1, P2]),
+        exibir_lista(Combo)
+    ;
+        nl, write('Uma das pizzas nao existe.'), nl).
+
+processar_avancado(_) :- nl, write('Opcao invalida!'), nl.
 
 
 % Msg ao carregar
