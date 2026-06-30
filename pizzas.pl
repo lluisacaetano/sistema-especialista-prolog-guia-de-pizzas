@@ -499,7 +499,7 @@ info_completa(Pizza) :-
     recomendar_bebidas(Pizza, Bebidas),
     (Bebidas \= [] -> format('Harmoniza com: ~w~n', [Bebidas]) ; true),
     (preco(Pizza, P) -> format('Faixa de preco: ~w~n', [P]) ; true),
-    format('========================================~n~n').
+    format('========================================~n').
 info_completa(Pizza) :-
     format('Pizza "~w" nao encontrada.~n', [Pizza]).
 
@@ -519,10 +519,9 @@ comparar_pizzas(P1, P2) :-
     format('Categoria:   ~8w | ~8w~n', [C1, C2]),
     format('Molho:       ~8w | ~8w~n', [M1, M2]),
     format('Popularidade:~8w | ~8w~n', [Pop1, Pop2]),
-    format('Ingredientes:~8w | ~8w~n', [N1, N2]),
-    format('~n').
+    format('Ingredientes:~8w | ~8w~n', [N1, N2]).
 comparar_pizzas(_, _) :-
-    write('Uma ou ambas pizzas nao encontradas.'), nl.
+    nl, write('Uma ou ambas pizzas nao encontradas.'), nl.
 
 % Mostra estatisticas gerais
 estatisticas :-
@@ -539,8 +538,7 @@ estatisticas :-
     format('  Especiais: ~w~n', [NEsp]),
     format('  Doces: ~w~n', [NDoc]),
     format('  Veganas: ~w~n', [NVeg]),
-    format('  Fitness: ~w~n', [NFit]),
-    format('~n').
+    format('  Fitness: ~w~n', [NFit]).
 
 
 % ============================================
@@ -563,10 +561,11 @@ cabecalho :-
     write('*                                                  *'), nl,
     write('*      SISTEMA ESPECIALISTA - GUIA DE PIZZAS       *'), nl,
     write('*                                                  *'), nl,
-    write('****************************************************'), nl, nl.
+    write('****************************************************'), nl.
 
 % Menu principal
 menu_principal :-
+    nl,
     write('****************************************************'), nl,
     write('*              MENU PRINCIPAL                      *'), nl,
     write('****************************************************'), nl,
@@ -594,7 +593,7 @@ processar(5) :- !, menu_harmonizacao, menu_principal.
 processar(6) :- !, comparar_menu, menu_principal.
 processar(7) :- !, estatisticas, menu_principal.
 processar(8) :- !, menu_avancado, menu_principal.
-processar(_) :- nl, write('Opcao invalida!'), nl, nl, menu_principal.
+processar(_) :- nl, write('Opcao invalida!'), nl, menu_principal.
 
 % Busca pizza pelo nome
 buscar_nome :-
@@ -619,8 +618,8 @@ listar_categoria :-
         nl, format('Pizzas ~w:~n', [Cat]),
         exibir_lista(Lista)
     ;
-        write('Opcao invalida!')
-    ), nl.
+        nl, write('Opcao invalida!'), nl
+    ).
 
 % Converte numero pra categoria
 opcao_categoria(1, tradicional) :- !.
@@ -635,8 +634,12 @@ buscar_ingrediente :-
     nl, write('Ingrediente (ex: mussarela, calabresa, frango): '),
     read(Ing),
     pizzas_com_ingrediente(Ing, Lista),
-    nl, format('Pizzas com ~w:~n', [Ing]),
-    exibir_lista(Lista), nl.
+    (Lista \= [] ->
+        nl, format('Pizzas com ~w:~n', [Ing]),
+        exibir_lista(Lista)
+    ;
+        nl, format('Nenhuma pizza com ~w.~n', [Ing])
+    ).
 
 % Menu de recomendacoes
 menu_recomendacoes :-
@@ -673,8 +676,8 @@ menu_harmonizacao :-
         nl, format('~w harmoniza com:~n', [Pizza]),
         exibir_lista(Bebidas)
     ;
-        nl, write('Nenhuma harmonizacao cadastrada.')
-    ), nl.
+        nl, write('Nenhuma harmonizacao cadastrada.'), nl
+    ).
 
 % Comparar duas pizzas
 comparar_menu :-
