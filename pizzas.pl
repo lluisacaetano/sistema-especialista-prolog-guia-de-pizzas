@@ -503,23 +503,27 @@ info_completa(Pizza) :-
 info_completa(Pizza) :-
     format('Pizza "~w" nao encontrada.~n', [Pizza]).
 
-% Compara duas pizzas
+% Mostra o bloco de uma pizza (usado na comparacao)
+bloco_pizza(P) :-
+    pizza(P, Cat, Molho, Pop),
+    ingredientes_pizza(P, Ings),
+    tamanho(Ings, N),
+    format('----------------------------------------~n'),
+    format('  PIZZA: ~w~n', [P]),
+    format('----------------------------------------~n'),
+    format('  Categoria:    ~w~n', [Cat]),
+    format('  Molho base:   ~w~n', [Molho]),
+    format('  Popularidade: ~w~n', [Pop]),
+    format('  Ingredientes (~w):~n', [N]),
+    exibir_lista(Ings).
+
+% Compara duas pizzas (uma abaixo da outra)
 comparar_pizzas(P1, P2) :-
     pizza_existe(P1),
     pizza_existe(P2), !,
-    pizza(P1, C1, M1, Pop1),
-    pizza(P2, C2, M2, Pop2),
-    ingredientes_pizza(P1, I1),
-    ingredientes_pizza(P2, I2),
-    tamanho(I1, N1),
-    tamanho(I2, N2),
-    format('~n=== COMPARACAO ===~n'),
-    format('~20w | ~20w~n', [P1, P2]),
-    format('~`-t~42|~n'),
-    format('Categoria:   ~8w | ~8w~n', [C1, C2]),
-    format('Molho:       ~8w | ~8w~n', [M1, M2]),
-    format('Popularidade:~8w | ~8w~n', [Pop1, Pop2]),
-    format('Ingredientes:~8w | ~8w~n', [N1, N2]).
+    nl, format('=== COMPARACAO ===~n'),
+    nl, bloco_pizza(P1),
+    nl, bloco_pizza(P2).
 comparar_pizzas(_, _) :-
     nl, write('Uma ou ambas pizzas nao encontradas.'), nl.
 
@@ -532,13 +536,14 @@ estatisticas :-
     findall(P, pizza(P, doce, _, _), Doc), tamanho(Doc, NDoc),
     findall(P, pizza(P, vegana, _, _), Veg), tamanho(Veg, NVeg),
     findall(P, pizza(P, fitness, _, _), Fit), tamanho(Fit, NFit),
-    format('~n=== ESTATISTICAS ===~n'),
-    format('Total de pizzas: ~w~n', [Total]),
-    format('  Tradicionais: ~w~n', [NTrad]),
-    format('  Especiais: ~w~n', [NEsp]),
-    format('  Doces: ~w~n', [NDoc]),
-    format('  Veganas: ~w~n', [NVeg]),
-    format('  Fitness: ~w~n', [NFit]).
+    format('~n=== ESTATISTICAS ===~n~n'),
+    format('Total de pizzas: ~w~n~n', [Total]),
+    format('Por categoria:~n'),
+    format('  ~w~t~18|~w~n', ['Tradicionais:', NTrad]),
+    format('  ~w~t~18|~w~n', ['Especiais:', NEsp]),
+    format('  ~w~t~18|~w~n', ['Doces:', NDoc]),
+    format('  ~w~t~18|~w~n', ['Veganas:', NVeg]),
+    format('  ~w~t~18|~w~n', ['Fitness:', NFit]).
 
 
 % ============================================
@@ -721,19 +726,25 @@ processar_avancado(2) :- !,
 processar_avancado(3) :- !,
     nl, write('Nome da pizza: '), read(Pizza),
     write('Ingrediente: '), read(Ing),
-    (ingredientes_pizza(Pizza, Lista), membro(Ing, Lista) ->
+    ( \+ pizza_existe(Pizza) ->
+        nl, format('A pizza "~w" nao existe no cardapio.~n', [Pizza])
+    ; ingredientes_pizza(Pizza, Lista), membro(Ing, Lista) ->
         nl, format('Sim! ~w leva ~w.~n', [Pizza, Ing])
     ;
-        nl, format('Nao. ~w nao leva ~w (ou nao existe).~n', [Pizza, Ing])).
+        nl, format('Nao. ~w nao leva ~w.~n', [Pizza, Ing])
+    ).
 
 % Verifica restricao: a pizza NAO tem o ingrediente? (negacao por falha \+)
 processar_avancado(4) :- !,
     nl, write('Nome da pizza: '), read(Pizza),
     write('Ingrediente a evitar: '), read(Ing),
-    (pizza_sem_ingrediente(Pizza, Ing) ->
+    ( \+ pizza_existe(Pizza) ->
+        nl, format('A pizza "~w" nao existe no cardapio.~n', [Pizza])
+    ; pizza_sem_ingrediente(Pizza, Ing) ->
         nl, format('Pode comer! ~w nao leva ~w.~n', [Pizza, Ing])
     ;
-        nl, format('Cuidado: ~w leva ~w (ou nao existe).~n', [Pizza, Ing])).
+        nl, format('Cuidado: ~w leva ~w.~n', [Pizza, Ing])
+    ).
 
 % Filtra so as vegetarianas de todas as pizzas (recursao sobre lista)
 processar_avancado(5) :- !,
@@ -744,7 +755,8 @@ processar_avancado(5) :- !,
 
 % Filtra todas as pizzas de uma categoria (recursao sobre lista)
 processar_avancado(6) :- !,
-    nl, write('Categoria (tradicional/especial/vegana/doce/fitness): '), read(Cat),
+    nl, write('Categoria (tradicional/especial/vegana/doce/fitness):'), nl,
+    read(Cat),
     findall(P, pizza(P, _, _, _), Todas),
     filtrar_por_categoria(Todas, Cat, Filtradas),
     nl, format('Pizzas da categoria ~w (filtro recursivo):~n', [Cat]),
